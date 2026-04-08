@@ -14,9 +14,18 @@ const Dashboard = () => {
   const [showAutoTriage, setShowAutoTriage] = useState(false);
   const [activeHospitalIdx, setActiveHospitalIdx] = useState(0);
   const [activeTab, setActiveTab] = useState('backtrack');
+  const [currentTime, setCurrentTime] = useState(new Date());
   const simulatorRef = useRef(null);
   const feedEndRef = useRef(null);
   const [pulsingHospitals, setPulsingHospitals] = useState({});
+
+  // Live clock update
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Initialize simulator
   useEffect(() => {
@@ -109,6 +118,12 @@ const Dashboard = () => {
     [28, 18, 0]
   ];
 
+  const timeString = currentTime.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* TOP BAR */}
@@ -122,9 +137,7 @@ const Dashboard = () => {
 
           {/* Center */}
           <div className="text-center">
-            <p className="text-lg font-bold">
-              {new Date().toLocaleTimeString('en-US')}
-            </p>
+            <p className="text-lg font-bold font-mono">{timeString}</p>
             <p className="text-xs text-gray-400">Mumbai Emergency Network</p>
           </div>
 
@@ -176,6 +189,7 @@ const Dashboard = () => {
               {state.arrivalFeed.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <p>Waiting for patient arrivals...</p>
+                  <p className="text-xs text-gray-400 mt-2">Click "Start" to begin</p>
                 </div>
               ) : (
                 <>

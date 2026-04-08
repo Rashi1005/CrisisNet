@@ -96,20 +96,38 @@ export class CrisisSimulator {
    */
   async initialize() {
     try {
-      const ort = await import('onnxruntime-web');
+      // Try to load model - but don't fail if it doesn't exist
+      try {
+        const ort = await import('onnxruntime-web');
+        const modelResp = await fetch('/autotriage_model.onnx');
+        
+        if (modelResp.ok) {
+          const modelBuffer = await modelResp.arrayBuffer();
+          this.model = await ort.InferenceSession.create(modelBuffer);
+          console.log('✓ AutoTriage model loaded');
+        } else {
+          console.warn('⚠ AutoTriage model not found - using fallback survival scores');
+        }
+      } catch (modelError) {
+        console.warn('⚠ Could not load ONNX model:', modelError.message);
+      }
 
-      // Load model
-      const modelResp = await fetch('/autotriage_model.onnx');
-      const modelBuffer = await modelResp.arrayBuffer();
-      this.model = await ort.InferenceSession.create(modelBuffer);
+      // Try to load scaler
+      try {
+        const scalerResp = await fetch('/autotriage_scaler.json');
+        if (scalerResp.ok) {
+          this.scaler = await scalerResp.json();
+          console.log('✓ Scaler loaded');
+        } else {
+          console.warn('⚠ Scaler not found');
+        }
+      } catch (scalerError) {
+        console.warn('⚠ Could not load scaler:', scalerError.message);
+      }
 
-      // Load scaler
-      const scalerResp = await fetch('/autotriage_scaler.json');
-      this.scaler = await scalerResp.json();
-
-      console.log('✓ CrisisSimulator initialized with AutoTriage model');
+      console.log('✓ CrisisSimulator initialized');
     } catch (error) {
-      console.error('Failed to initialize simulator:', error);
+      console.error('Initialization error:', error);
     }
   }
 
@@ -173,21 +191,21 @@ export class CrisisSimulator {
         const results = await this.model.run(feeds);
 
         // Get prediction
-        const predictions = results[Object.keys(results)[0]].data;
-        const predictedLabel = Array.from(predictions).indexOf(
-          Math.max(...Array.from(predictions))
-        );
+        const resultKey = Object.keys(results)[0];
+        const predictions = Array.from(results[resultKey].data);
+        const predictedLabel = predictions.indexOf(Math.max(...predictions));
         survivalScore = Math.min(10, Math.max(1, predictedLabel + 1));
         confidence = Math.round(
-          (Math.max(...Array.from(predictions)) / Array.from(predictions).reduce((a, b) => a + b)) * 100
+          (Math.max(...predictions) / predictions.reduce((a, b) => a + b)) * 100
         );
       } catch (error) {
-        console.warn('AutoTriage inference failed, using default:', error);
+        console.warn('AutoTriage inference failed:', error);
         survivalScore = 5 + Math.random() * 4;
         confidence = 60;
       }
     } else {
-      survivalScore = 5 + Math.random() * 4;
+      // Fallback: deterministic score based on vitals
+      survivalScore = this.calculateFallbackScore(age, systolic_bp, spo2, heart_rate, temperature, condition);
       confidence = 60;
     }
 
@@ -220,6 +238,38 @@ export class CrisisSimulator {
     };
 
     return patient;
+  }
+
+  /**
+   * Fallback survival score calculation (when model unavailable)
+   */
+  calculateFallbackScore(age, systolic_bp, spo2, heart_rate, temperature, condition) {
+    let score = 10.0;
+
+    if (age < 25) score -= 0.5;
+    else if (age < 40) score -= 0;
+    else if (age < 60) score -= 1;
+    else if (age < 75) score -= 2;
+    else score -= 3;
+
+    if (90 <= systolic_bp && systolic_bp <= 130) score += 1;
+    else if (systolic_bp < 80 || systolic_bp > 150) score -= 2;
+
+    if (spo2 >= 95) score += 1;
+    else if (spo2 >= 90) score += 0;
+    else if (spo2 >= 85) score -= 1;
+    else score -= 3;
+
+    if (60 <= heart_rate && heart_rate <= 100) score += 1;
+    else if (heart_rate < 40 || heart_rate > 140) score -= 3;
+
+    if (36.5 <= temperature && temperature <= 37.5) score += 1;
+    else if (temperature < 36 || temperature > 39) score -= 1.5;
+
+    const conditionMultiplier = [1.0, 0.7, 0.4][condition];
+    score *= conditionMultiplier;
+
+    return Math.max(1, Math.min(10, score));
   }
 
   /**
