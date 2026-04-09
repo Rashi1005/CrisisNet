@@ -1,18 +1,19 @@
 {
   "name": "crisisnet",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "train-model": ".venv\\Scripts\\python.exe ml/train_model.py"
+    "train-model": "python ml/train_model.py"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "onnxruntime-web": "^1.18.0"
+    "onnxruntime-web": "^1.18.0",
+    "leaflet": "^1.9.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

@@ -14,7 +14,33 @@ body,
   width: 100%;
   height: 100%;
   font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
+  background: linear-gradient(to br, #050D1A, #0B1426);
+}
+
+/* Command skin colors */
+:root {
+  --color-cyan: #00E5CC;
+  --color-cyan-dark: #0B1E35;
+  --color-navy: #050D1A;
+  --color-red: #FF3B3B;
+  --color-amber: #FFB800;
+  --color-green: #22C55E;
+  --color-text: #E8EDF5;
+}
+
+/* Glow effects */
+.glow-text {
+  text-shadow: 0 0 8px rgba(0, 229, 204, 0.6), 0 0 16px rgba(0, 229, 204, 0.3);
+}
+
+.panel-glow {
+  box-shadow: inset 0 0 12px rgba(0, 229, 204, 0.1);
+  border: 1px solid rgba(0, 229, 204, 0.2);
+}
+
+.panel-glow:hover {
+  box-shadow: inset 0 0 12px rgba(0, 229, 204, 0.1), 0 0 12px rgba(0, 229, 204, 0.15);
+  border: 1px solid rgba(0, 229, 204, 0.4);
 }
 
 /* Animations */
@@ -38,6 +64,34 @@ body,
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeOutBootSequence {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes scanlines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 10px;
+  }
+}
+
 .animate-slide-in-top {
   animation: slideInTop 0.5s ease-out;
 }
@@ -53,45 +107,99 @@ body,
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgba(0, 229, 204, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(0, 229, 204, 0.3);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(0, 229, 204, 0.5);
 }
 
 /* Input range styling */
 input[type='range'] {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background: #e5e7eb;
+  background: #1a2a3a;
   outline: none;
+  border: 1px solid rgba(0, 229, 204, 0.2);
 }
 
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #0d9488;
+  background: #00E5CC;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 8px rgba(0, 229, 204, 0.4);
+  border: 2px solid #050D1A;
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #0d9488;
+  background: #00E5CC;
   cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid #050D1A;
+  box-shadow: 0 0 8px rgba(0, 229, 204, 0.4);
+}
+
+/* Command skin specific */
+.command-monitor {
+  background: #050D1A;
+  border: 2px solid rgba(0, 229, 204, 0.2);
+  border-radius: 4px;
+  box-shadow: inset 0 0 20px rgba(0, 229, 204, 0.05);
+}
+
+.command-monitor:hover {
+  box-shadow: inset 0 0 20px rgba(0, 229, 204, 0.1), 0 0 12px rgba(0, 229, 204, 0.15);
+  border-color: rgba(0, 229, 204, 0.4);
+}
+
+/* Status indicator */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.status-indicator.active {
+  background: #22C55E;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.inactive {
+  background: #FF3B3B;
+}
+
+.status-indicator.warning {
+  background: #FFB800;
+  box-shadow: 0 0 8px rgba(255, 184, 0, 0.4);
+  animation: pulse 1s infinite;
+}
+
+/* Responsive - ensure no horizontal scroll */
+html,
+body {
+  overflow: hidden;
+}
+
+/* Mobile considerations (though desktop-focused) */
+@media (max-width: 1440px) {
+  html {
+    font-size: 14px;
+  }
 }

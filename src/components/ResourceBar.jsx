@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 const ResourceBar = ({ label, used, total, animate = true }) => {
   const [displayUsed, setDisplayUsed] = useState(used);
-  
+  const [prevUsed, setPrevUsed] = useState(used);
+
   useEffect(() => {
     if (!animate) {
       setDisplayUsed(used);
@@ -12,7 +13,7 @@ const ResourceBar = ({ label, used, total, animate = true }) => {
     const diff = used - displayUsed;
     if (diff === 0) return;
 
-    const steps = 10;
+    const steps = 15;
     const stepValue = diff / steps;
     let current = 0;
 
@@ -22,37 +23,50 @@ const ResourceBar = ({ label, used, total, animate = true }) => {
         const newVal = displayUsed + stepValue * current;
         return current === steps ? used : newVal;
       });
-    }, 30);
+    }, 20);
 
     return () => clearInterval(interval);
   }, [used, displayUsed, animate]);
+
+  // Trigger animation on value change
+  useEffect(() => {
+    if (used !== prevUsed) {
+      setPrevUsed(used);
+    }
+  }, [used, prevUsed]);
 
   const percentage = (displayUsed / total) * 100;
   let color = '#1D9E75'; // safe-teal
 
   if (percentage >= 85) {
-    color = '#E24B4A'; // critical-red
+    color = '#FF3B3B'; // critical-red
   } else if (percentage >= 60) {
-    color = '#EF9F27'; // triage-amber
+    color = '#FFB800'; // triage-amber
   }
 
   return (
-    <div className="mb-3">
+    <div className="mb-0">
       <div className="flex justify-between text-xs font-semibold mb-1">
-        <span className="text-gray-700">{label}</span>
-        <span className="text-gray-600">
+        <span className="text-cyan-300">{label}</span>
+        <span className="text-cyan-400">
           {Math.round(displayUsed)} / {total}
         </span>
       </div>
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-3 bg-gray-800 rounded-full overflow-hidden border border-cyan-400 border-opacity-20 relative">
         <div
-          className="h-full transition-all duration-300"
+          className="h-full transition-all duration-300 flex items-center justify-end pr-1"
           style={{
             width: `${percentage}%`,
             backgroundColor: color,
-            boxShadow: percentage >= 85 ? '0 0 8px rgba(226, 75, 74, 0.4)' : 'none'
+            boxShadow: percentage >= 85 ? `inset 0 0 8px ${color}` : 'none'
           }}
-        />
+        >
+          {percentage > 40 && (
+            <span style={{ fontSize: '9px', fontWeight: 'bold', color: '#050D1A' }}>
+              {Math.round(percentage)}%
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
