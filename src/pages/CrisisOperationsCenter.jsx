@@ -7,11 +7,13 @@ import AlgorithmCards from '../components/AlgorithmCards';
 import StatsSection from '../components/StatsSection';
 import DeathRace from '../components/DeathRace';
 import ConscieneceFeed from '../components/ConscieneceFeed';
+import AlgorithmDeathRace from '../components/AlgorithmDeathRace';
 import CTA from '../components/CTA';
 
 const CrisisOperationsCenter = ({ state, simulatorRef }) => {
   const [consequenceLog, setConsequenceLog] = useState([]);
   const [surgeAlert, setSurgeAlert]         = useState(false);
+  const [showDeathRace, setShowDeathRace]   = useState(false);
 
   // Build conscience log from arrival feed
   useEffect(() => {
@@ -65,13 +67,26 @@ const CrisisOperationsCenter = ({ state, simulatorRef }) => {
         />
       )}
 
+      {/* Full-screen Death Race modal */}
+      {showDeathRace && (
+        <AlgorithmDeathRace
+          state={state}
+          simulatorRef={simulatorRef}
+          onBack={() => setShowDeathRace(false)}
+        />
+      )}
+
       {/* Fixed Navigation */}
-      <Navigation state={state} simulatorRef={simulatorRef} />
+      <Navigation
+        state={state}
+        simulatorRef={simulatorRef}
+        onDeathRace={() => setShowDeathRace(true)}
+      />
 
       {/* Hero */}
       <Hero state={state} simulatorRef={simulatorRef} />
 
-      {/* ── Operations ─────────────────────────────────────── */}
+      {/* ── Operations ─────────────────────────────────────────── */}
       <div className="cn-divider" />
 
       <section className="cn-section" id="operations">
@@ -127,6 +142,13 @@ const CrisisOperationsCenter = ({ state, simulatorRef }) => {
           <p className="cn-section-subtitle">
             Same crisis. Three algorithms. One optimal winner — 4D Knapsack DP vs Greedy vs First-Come First-Served.
           </p>
+          <button
+            className="cn-btn-danger"
+            style={{ marginTop: 20 }}
+            onClick={() => setShowDeathRace(true)}
+          >
+            ⚡ Full-Screen Death Race
+          </button>
         </div>
         <DeathRace state={state} />
       </section>
@@ -145,9 +167,93 @@ const CrisisOperationsCenter = ({ state, simulatorRef }) => {
         <ConscieneceFeed consequences={consequenceLog} />
       </section>
 
+      {/* ── Horizontal Conscience Strip ─────────────────────── */}
+      <ConscienceStrip consequences={consequenceLog} />
+
       {/* ── CTA + Footer ───────────────────────────────────── */}
       <div className="cn-divider" />
       <CTA />
+    </div>
+  );
+};
+
+// ── Horizontal scrolling conscience strip ──────────────────────────────────
+const STRIP_COLOR = {
+  positive: { bg: 'rgba(31,208,112,0.07)', border: '#1FD070', text: '#90EAC0', label: 'ALLOC' },
+  neutral:  { bg: 'rgba(0,200,240,0.07)',  border: '#00C8F0', text: '#B0E8F0', label: 'ALLOC' },
+  warning:  { bg: 'rgba(255,176,32,0.07)', border: '#FFB020', text: '#F0CC85', label: 'XFER'  },
+  critical: { bg: 'rgba(255,45,78,0.07)',  border: '#FF2D4E', text: '#FF8FA0', label: 'DEFER' },
+};
+
+const ConscienceStrip = ({ consequences }) => {
+  if (consequences.length === 0) return null;
+
+  const items = consequences.slice(0, 12);
+
+  return (
+    <div style={{
+      borderTop: '1px solid var(--border-subtle)',
+      borderBottom: '1px solid var(--border-subtle)',
+      background: 'rgba(6,10,18,0.95)',
+      padding: '12px var(--pad-desktop)',
+      overflow: 'hidden',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, overflow: 'hidden' }}>
+        {/* Static label */}
+        <div style={{
+          fontSize: 9, fontWeight: 900, letterSpacing: 2.5, textTransform: 'uppercase',
+          color: 'var(--color-red)', background: 'rgba(255,45,78,0.1)',
+          border: '1px solid rgba(255,45,78,0.3)', borderRadius: 4,
+          padding: '4px 10px', whiteSpace: 'nowrap', flexShrink: 0,
+        }}>
+          ⚡ Conscience
+        </div>
+
+        {/* Scrolling strip */}
+        <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          <div style={{
+            display: 'flex', gap: 10,
+            animation: 'stripScroll 30s linear infinite',
+            whiteSpace: 'nowrap',
+          }}>
+            {[...items, ...items].map((item, idx) => {
+              const s = STRIP_COLOR[item.severity] ?? STRIP_COLOR.neutral;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    background: s.bg, border: `1px solid ${s.border}`,
+                    borderLeft: `3px solid ${s.border}`,
+                    borderRadius: 6, padding: '5px 12px',
+                    fontSize: 11, color: s.text, flexShrink: 0, maxWidth: 380,
+                    overflow: 'hidden', textOverflow: 'ellipsis',
+                  }}
+                >
+                  <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1.5, opacity: 0.7, flexShrink: 0 }}>
+                    [{s.label}]
+                  </span>
+                  <span style={{ fontFamily: 'Courier New, monospace', fontSize: 9, color: 'rgba(232,237,245,0.4)', flexShrink: 0 }}>
+                    {item.timestamp instanceof Date
+                      ? item.timestamp.toLocaleTimeString('en-US', { hour12: false })
+                      : '--:--:--'}
+                  </span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {item.message}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes stripScroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 };

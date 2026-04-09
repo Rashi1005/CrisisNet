@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Navigation = ({ state, simulatorRef }) => {
+const Navigation = ({ state, simulatorRef, onDeathRace }) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -64,6 +64,17 @@ const Navigation = ({ state, simulatorRef }) => {
 
       {/* Controls */}
       <div className="cn-nav-controls">
+        {/* Death Race toggle */}
+        {onDeathRace && (
+          <button
+            className="cn-btn-icon"
+            onClick={onDeathRace}
+            title="Algorithm Death Race"
+            style={{ color: 'var(--color-red)', borderColor: 'rgba(255,45,78,0.3)', background: 'rgba(255,45,78,0.08)', fontSize: 14 }}
+          >
+            ⚡
+          </button>
+        )}
         <button
           className="cn-btn-icon"
           onClick={handleToggle}

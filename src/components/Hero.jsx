@@ -92,12 +92,36 @@ const Hero = ({ state, simulatorRef }) => {
 
         {/* CTAs */}
         <div className="cn-hero-cta cn-fade-in cn-delay-4">
-          <button className="cn-btn-primary" onClick={handleStart}>
-            {isRunning ? '▶ Running' : '▶ Launch Simulation'}
+          <button
+            className="cn-btn-primary"
+            onClick={() => { handleStart(); handleScrollToOps(); }}
+          >
+            {isRunning ? '▶ Running — View Ops ↓' : '🚀 Launch Simulation'}
           </button>
           <button className="cn-btn-ghost" onClick={handleScrollToOps}>
             View Operations ↓
           </button>
+        </div>
+
+        {/* Algorithm badges */}
+        <div className="cn-fade-in cn-delay-5" style={{
+          display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 32,
+        }}>
+          {[
+            { label: '4D Knapsack DP', color: 'var(--color-purple)' },
+            { label: 'Dijkstra Routing', color: 'var(--color-cyan)' },
+            { label: 'AutoTriage AI', color: 'var(--color-amber)' },
+            { label: 'Huffman Tree', color: 'var(--color-green)' },
+          ].map(b => (
+            <span key={b.label} style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+              color: b.color, background: `${b.color}12`,
+              border: `1px solid ${b.color}30`,
+              padding: '5px 14px', borderRadius: 100,
+            }}>
+              {b.label}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -109,6 +133,14 @@ const Hero = ({ state, simulatorRef }) => {
           'linear-gradient(90deg, rgba(0,200,240,0.03) 1px, transparent 1px)',
         backgroundSize: '64px 64px',
         maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%)'
+      }} />
+
+      {/* Radial glow */}
+      <div style={{
+        position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 600, height: 600, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(0,200,240,0.04) 0%, transparent 70%)',
+        pointerEvents: 'none', zIndex: 0,
       }} />
     </section>
   );
