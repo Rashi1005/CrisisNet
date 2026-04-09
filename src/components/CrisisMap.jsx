@@ -110,7 +110,7 @@ const CrisisMap = ({ state }) => {
       patientsRef.current[patient.id] = dot;
       addSonarRipple(map, originLat, originLng, '#FF2D4E', sonarLayersRef);
       setTimeout(() => {
-        if (dot && map) { try { map.removeLayer(dot); } catch (_) {} }
+        if (dot && map) { try { map.removeLayer(dot); } catch (_e) { /* layer already removed */ } }
         delete patientsRef.current[patient.id];
       }, 6000);
       return;
@@ -148,7 +148,7 @@ const CrisisMap = ({ state }) => {
       }).addTo(map);
       routesRef.current.push(glow, glow2);
       setTimeout(() => {
-        try { map.removeLayer(glow); map.removeLayer(glow2); } catch (_) {}
+        try { map.removeLayer(glow); map.removeLayer(glow2); } catch (_e) { /* layer already removed */ }
       }, 4000);
       lastTransferRef.current = { from: [originLat, originLng], to: [dest.lat, dest.lng] };
     }
@@ -162,11 +162,11 @@ const CrisisMap = ({ state }) => {
       step++;
       const lat = originLat + dLat * step;
       const lng = originLng + dLng * step;
-      try { ambulance.setLatLng([lat, lng]); } catch (_) {}
+      try { ambulance.setLatLng([lat, lng]); } catch (_e) { /* layer already removed */ }
       if (step >= steps) {
         clearInterval(anim);
         setTimeout(() => {
-          try { map.removeLayer(ambulance); } catch (_) {}
+          try { map.removeLayer(ambulance); } catch (_e) { /* layer already removed */ }
           delete patientsRef.current[patient.id];
         }, 600);
       }
@@ -269,7 +269,7 @@ function addSonarRipple(map, lat, lng, color, layersRef) {
   }).addTo(map);
   layersRef.current.push(marker);
   setTimeout(() => {
-    try { map.removeLayer(marker); } catch (_) {}
+    try { map.removeLayer(marker); } catch (_e) { /* layer already removed */ }
     layersRef.current = layersRef.current.filter(l => l !== marker);
   }, 1600);
 }

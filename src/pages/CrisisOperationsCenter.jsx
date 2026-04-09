@@ -179,10 +179,10 @@ const CrisisOperationsCenter = ({ state, simulatorRef }) => {
 
 // ── Horizontal scrolling conscience strip ──────────────────────────────────
 const STRIP_COLOR = {
-  positive: { bg: 'rgba(31,208,112,0.07)', border: '#1FD070', text: '#90eac0', label: 'ALLOC' },
-  neutral:  { bg: 'rgba(0,200,240,0.07)',  border: '#00C8F0', text: '#b0e8f0', label: 'ALLOC' },
-  warning:  { bg: 'rgba(255,176,32,0.07)', border: '#FFB020', text: '#f0cc85', label: 'XFER'  },
-  critical: { bg: 'rgba(255,45,78,0.07)',  border: '#FF2D4E', text: '#ff8fa0', label: 'DEFER' },
+  positive: { bg: 'rgba(31,208,112,0.07)', border: '#1FD070', text: '#90EAC0', label: 'ALLOC' },
+  neutral:  { bg: 'rgba(0,200,240,0.07)',  border: '#00C8F0', text: '#B0E8F0', label: 'ALLOC' },
+  warning:  { bg: 'rgba(255,176,32,0.07)', border: '#FFB020', text: '#F0CC85', label: 'XFER'  },
+  critical: { bg: 'rgba(255,45,78,0.07)',  border: '#FF2D4E', text: '#FF8FA0', label: 'DEFER' },
 };
 
 const ConscienceStrip = ({ consequences }) => {

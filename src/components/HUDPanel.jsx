@@ -37,6 +37,8 @@ const HUDPanel = ({ state }) => {
   const totalPatients  = hospitals.reduce((s, h) => s + h.patients.length, 0);
   const totalICU       = hospitals.reduce((s, h) => s + h.icuUsed, 0);
   const totalICUCap    = hospitals.reduce((s, h) => s + h.icuTotal, 0);
+  const icuPctOverall  = totalICUCap > 0 ? totalICU / totalICUCap : 0;
+  const icuCritical    = icuPctOverall > 0.85;
 
   // Derive which algorithm fired last
   const lastAlgo =
@@ -55,9 +57,9 @@ const HUDPanel = ({ state }) => {
           <span
             className="cn-badge"
             style={{
-              background: `rgba(${totalICUCap > 0 && totalICU / totalICUCap > 0.85 ? '255,45,78' : '0,200,240'}, 0.1)`,
-              border: `1px solid rgba(${totalICUCap > 0 && totalICU / totalICUCap > 0.85 ? '255,45,78' : '0,200,240'}, 0.25)`,
-              color: totalICUCap > 0 && totalICU / totalICUCap > 0.85 ? 'var(--color-red)' : 'var(--color-cyan)',
+              background: `rgba(${icuCritical ? '255,45,78' : '0,200,240'}, 0.1)`,
+              border: `1px solid rgba(${icuCritical ? '255,45,78' : '0,200,240'}, 0.25)`,
+              color: icuCritical ? 'var(--color-red)' : 'var(--color-cyan)',
             }}
           >
             ICU {totalICU}/{totalICUCap}
@@ -89,6 +91,7 @@ const HUDPanel = ({ state }) => {
       {/* ── Hospital Rows ──────────────────────────────────── */}
       {hospitals.map((h) => {
         const status    = getStatus(h.icuUsed, h.icuTotal);
+        const icuPct    = h.icuTotal > 0 ? (h.icuUsed / h.icuTotal) * 100 : 0;
         const fillColor = statusColor[status];
         return (
           <div key={h.id} className="cn-hospital-row">

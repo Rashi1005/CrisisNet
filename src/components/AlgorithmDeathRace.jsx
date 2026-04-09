@@ -98,9 +98,9 @@ const AlgorithmDeathRace = ({ state, simulatorRef, onBack }) => {
         gap: 20, padding: '24px 32px', position: 'relative', zIndex: 2,
         overflow: 'hidden',
       }}>
-        <RacePod id="knapsack" name="4D Knapsack DP"        emoji="👑" data={raceState.knapsack} color="var(--color-cyan)"   glow="rgba(0,200,240,0.15)"    tag="OPTIMAL"   raceState={raceState} />
-        <RacePod id="greedy"   name="Greedy Condition"       emoji="🎯" data={raceState.greedy}   color="var(--color-amber)"  glow="rgba(255,176,32,0.15)"   tag="HEURISTIC" raceState={raceState} />
-        <RacePod id="fcfs"     name="First Come First Served" emoji="⏳" data={raceState.fcfs}     color="var(--color-red)"    glow="rgba(255,45,78,0.15)"    tag="BASELINE"  raceState={raceState} />
+        <RacePod id="knapsack" name="4D Knapsack DP"        emoji="👑" data={raceState.knapsack} color="var(--color-cyan)"   glow="rgba(0,200,240,0.15)"    glowBorder="rgba(0,200,240,0.4)"    tag="OPTIMAL"   raceState={raceState} />
+        <RacePod id="greedy"   name="Greedy Condition"       emoji="🎯" data={raceState.greedy}   color="var(--color-amber)"  glow="rgba(255,176,32,0.15)"   glowBorder="rgba(255,176,32,0.4)"   tag="HEURISTIC" raceState={raceState} />
+        <RacePod id="fcfs"     name="First Come First Served" emoji="⏳" data={raceState.fcfs}     color="var(--color-red)"    glow="rgba(255,45,78,0.15)"    glowBorder="rgba(255,45,78,0.4)"    tag="BASELINE"  raceState={raceState} />
       </div>
 
       {/* Verdict overlay */}
@@ -135,7 +135,7 @@ const AlgorithmDeathRace = ({ state, simulatorRef, onBack }) => {
   );
 };
 
-const RacePod = ({ id, name, emoji, data, color, glow, tag, raceState }) => {
+const RacePod = ({ id, name, emoji, data, color, glow, glowBorder, tag, raceState }) => {
   const lives = data?.livesSaved ?? 0;
   const maxLives = Math.max(
     raceState.knapsack.livesSaved,
@@ -149,7 +149,7 @@ const RacePod = ({ id, name, emoji, data, color, glow, tag, raceState }) => {
   return (
     <div style={{
       background: isWinning ? glow : 'var(--bg-card)',
-      border: `1px solid ${isWinning ? color.replace(')', ', 0.4)').replace('var(', 'rgba(') : 'var(--border-subtle)'}`,
+      border: `1px solid ${isWinning ? glowBorder : 'var(--border-subtle)'}`,
       borderRadius: 16, padding: '24px 22px',
       display: 'flex', flexDirection: 'column', gap: 14,
       position: 'relative', overflow: 'hidden',
