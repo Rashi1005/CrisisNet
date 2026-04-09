@@ -1,145 +1,153 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import Navigation from '../components/Navigation';
+import Hero from '../components/Hero';
 import CrisisMap from '../components/CrisisMap';
-import AlgorithmSequencePanel from '../components/AlgorithmSequencePanel';
-import ConscientFeed from '../components/ConscientFeed';
-import LeftSidebar from '../components/LeftSidebar';
-import CrisisHeader from '../components/CrisisHeader';
-import AlgorithmDeathRace from '../components/AlgorithmDeathRace';
+import HUDPanel from '../components/HUDPanel';
+import AlgorithmCards from '../components/AlgorithmCards';
+import StatsSection from '../components/StatsSection';
+import DeathRace from '../components/DeathRace';
+import ConscieneceFeed from '../components/ConscieneceFeed';
+import CTA from '../components/CTA';
 
 const CrisisOperationsCenter = ({ state, simulatorRef }) => {
-  const [activeScreen, setActiveScreen] = useState('operations');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [consequenceLog, setConsequenceLog] = useState([]);
-  const [surgeAlert, setSurgeAlert] = useState(false);
+  const [surgeAlert, setSurgeAlert]         = useState(false);
 
-  // Generate consequences
+  // Build conscience log from arrival feed
   useEffect(() => {
-    if (!state || !state.arrivalFeed || state.arrivalFeed.length === 0) return;
+    if (!state?.arrivalFeed?.[0]) return;
+    const p = state.arrivalFeed[0];
 
-    const latestPatient = state.arrivalFeed[0];
-
-    if (latestPatient.status === 'allocated') {
-      const newConsequence = {
+    if (p.status === 'allocated') {
+      setConsequenceLog(prev => [{
         timestamp: new Date(),
-        type: 'allocation',
-        message: `Knapsack allocated ${latestPatient.id} (${latestPatient.condition}, Age ${latestPatient.age}) — Score: ${latestPatient.survivalScore} — Efficiency gain +${(latestPatient.survivalScore * 0.8).toFixed(1)}%`,
-        severity: latestPatient.survivalScore > 7 ? 'positive' : 'neutral',
-        patientId: latestPatient.id
-      };
-      setConsequenceLog(prev => [newConsequence, ...prev].slice(0, 50));
-    } else if (latestPatient.status === 'transferred') {
-      const penalty = latestPatient.originalScore - latestPatient.survivalScore;
-      const newConsequence = {
+        type:      'allocation',
+        message:   `Knapsack allocated ${p.id} (${p.condition}, Age ${p.age}) — Score: ${p.survivalScore} — Efficiency gain +${(p.survivalScore * 0.8).toFixed(1)}%`,
+        severity:  p.survivalScore > 7 ? 'positive' : 'neutral',
+      }, ...prev].slice(0, 60));
+    } else if (p.status === 'transferred') {
+      const penalty = (p.originalScore ?? p.survivalScore) - p.survivalScore;
+      setConsequenceLog(prev => [{
         timestamp: new Date(),
-        type: 'transfer',
-        message: `Dijkstra rerouted ${latestPatient.id} to hospital — arrival +${(penalty * 2).toFixed(0)}min — survival: ${latestPatient.originalScore} → ${latestPatient.survivalScore} (−${penalty.toFixed(1)}%)`,
-        severity: penalty > 2 ? 'critical' : penalty > 1 ? 'warning' : 'neutral',
-        patientId: latestPatient.id
-      };
-      setConsequenceLog(prev => [newConsequence, ...prev].slice(0, 50));
-    } else if (latestPatient.status === 'deferred') {
-      const newConsequence = {
+        type:      'transfer',
+        message:   `Dijkstra rerouted ${p.id} to hospital — arrival +${(Math.max(penalty, 0) * 2).toFixed(0)}min — survival: ${p.originalScore ?? p.survivalScore} → ${p.survivalScore} (−${Math.max(penalty, 0).toFixed(1)}%)`,
+        severity:  penalty > 2 ? 'critical' : penalty > 1 ? 'warning' : 'neutral',
+      }, ...prev].slice(0, 60));
+    } else if (p.status === 'deferred') {
+      setConsequenceLog(prev => [{
         timestamp: new Date(),
-        type: 'deferred',
-        message: `${latestPatient.id} DEFERRED — all hospitals full — waiting list +4min — survival probability −12%`,
-        severity: 'critical',
-        patientId: latestPatient.id
-      };
-      setConsequenceLog(prev => [newConsequence, ...prev].slice(0, 50));
+        type:      'deferred',
+        message:   `${p.id} DEFERRED — all hospitals full — waiting list +4min — survival probability −12%`,
+        severity:  'critical',
+      }, ...prev].slice(0, 60));
     }
-  }, [state?.arrivalFeed?.[0]?.id]);
+  }, [state?.arrivalFeed?.[0]?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Surge alert
   useEffect(() => {
-    if (!state || !state.hospitals) return;
-
-    const hasAlert = state.hospitals.some(h => (h.icuUsed / h.icuTotal) > 0.85);
-    setSurgeAlert(hasAlert);
+    if (!state?.hospitals) return;
+    setSurgeAlert(state.hospitals.some(h => h.icuTotal > 0 && (h.icuUsed / h.icuTotal) > 0.85));
   }, [state?.hospitals]);
 
-  if (activeScreen === 'death-race') {
-    return (
-      <AlgorithmDeathRace
-        state={state}
-        simulatorRef={simulatorRef}
-        onBack={() => setActiveScreen('operations')}
-      />
-    );
-  }
-
   return (
-    <div className="w-screen h-screen bg-gradient-to-br from-[#080C14] via-[#0A1220] to-[#080C14] overflow-hidden font-sans">
-      {/* Scanline effect */}
-      <div
-        className="fixed inset-0 pointer-events-none z-40"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 2px)',
-          backgroundSize: '100% 2px'
-        }}
-      />
+    <div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }}>
+      {/* Scanlines overlay */}
+      <div className="cn-scanlines" />
 
-      {/* Critical surge vignette flash */}
+      {/* Critical surge vignette */}
       {surgeAlert && (
         <div
-          className="fixed inset-0 pointer-events-none z-30"
           style={{
-            backgroundImage: 'radial-gradient(ellipse at center, transparent 0%, rgba(255, 59, 92, 0.15) 100%)',
-            animation: 'surge-vignette 2s ease-in-out infinite'
+            position: 'fixed', inset: 0, zIndex: 95, pointerEvents: 'none',
+            backgroundImage: 'radial-gradient(ellipse at center, transparent 0%, rgba(255,45,78,0.1) 100%)',
+            animation: 'surgeVignette 2.5s ease-in-out infinite',
           }}
         />
       )}
 
-      {/* Header */}
-      <CrisisHeader state={state} surgeAlert={surgeAlert} />
+      {/* Fixed Navigation */}
+      <Navigation state={state} simulatorRef={simulatorRef} />
 
-      {/* Main Layout */}
-      <div className="flex h-[calc(100vh-80px)] mt-20">
-        {/* Left Sidebar */}
-        <LeftSidebar
-          isOpen={sidebarOpen}
-          activeScreen={activeScreen}
-          onScreenChange={setActiveScreen}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
-        />
+      {/* Hero */}
+      <Hero state={state} simulatorRef={simulatorRef} />
 
-        {/* Left Contextual Panel (40% if sidebar open, 35% always) */}
-        <div className={`transition-all duration-300 ${sidebarOpen ? 'w-[35%]' : 'w-[40%]'} border-r border-cyan-500 border-opacity-10 bg-gradient-to-b from-[#0F1823] to-[#0A1220] flex flex-col overflow-hidden`}>
-          <AlgorithmSequencePanel state={state} onDeathRaceClick={() => setActiveScreen('death-race')} />
+      {/* ── Operations ─────────────────────────────────────── */}
+      <div className="cn-divider" />
+
+      <section className="cn-section" id="operations">
+        <div className="cn-section-header">
+          <div className="cn-section-label">Live Operations</div>
+          <h2 className="cn-section-title">Crisis Response Map</h2>
+          <p className="cn-section-subtitle">
+            Real-time Leaflet map of the Mumbai hospital network — 3 nodes, live patient routing and ambulance dispatch.
+          </p>
         </div>
 
-        {/* Main Crisis Map (Right 65%) */}
-        <div className="flex-1 flex flex-col relative">
-          <CrisisMap state={state} />
-
-          {/* Conscience Feed (Bottom strip, overlays map) */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080C14] via-[#080C14] border-t border-cyan-500 border-opacity-20">
-            <ConscientFeed consequences={consequenceLog} />
+        {/* Map + HUD side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+          <div className="cn-map-container" style={{ height: 540 }}>
+            <CrisisMap state={state} />
           </div>
+          <HUDPanel state={state} />
         </div>
-      </div>
+      </section>
 
-      <style>{`
-        @keyframes surge-vignette {
-          0%, 100% { opacity: 0; }
-          50% { opacity: 1; }
-        }
-        @keyframes glow-pulse {
-          0%, 100% { 
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3), 
-                        inset 0 0 10px rgba(0, 212, 255, 0.1);
-            border-color: rgba(0, 212, 255, 0.3);
-          }
-          50% {
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 
-                        inset 0 0 15px rgba(0, 212, 255, 0.2);
-            border-color: rgba(0, 212, 255, 0.6);
-          }
-        }
-        @keyframes count-up {
-          from { opacity: 0.7; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
+      {/* ── Algorithm Intelligence ──────────────────────────── */}
+      <div className="cn-divider" />
+
+      <section className="cn-section" id="algorithms">
+        <div className="cn-section-header">
+          <div className="cn-section-label">Intelligence Layer</div>
+          <h2 className="cn-section-title">Algorithm Stack</h2>
+          <p className="cn-section-subtitle">
+            Three algorithms execute sequentially for every patient arrival — scoring, allocating, and routing.
+          </p>
+        </div>
+        <AlgorithmCards state={state} />
+      </section>
+
+      {/* ── Statistics ─────────────────────────────────────── */}
+      <div className="cn-divider" />
+
+      <section className="cn-section" id="stats">
+        <div className="cn-section-header">
+          <div className="cn-section-label">System Metrics</div>
+          <h2 className="cn-section-title">Live Statistics</h2>
+        </div>
+        <StatsSection state={state} />
+      </section>
+
+      {/* ── Death Race ─────────────────────────────────────── */}
+      <div className="cn-divider" />
+
+      <section className="cn-section" id="death-race">
+        <div className="cn-section-header">
+          <div className="cn-section-label">Algorithm Benchmarks</div>
+          <h2 className="cn-section-title">Algorithm Death Race</h2>
+          <p className="cn-section-subtitle">
+            Same crisis. Three algorithms. One optimal winner — 4D Knapsack DP vs Greedy vs First-Come First-Served.
+          </p>
+        </div>
+        <DeathRace state={state} />
+      </section>
+
+      {/* ── Conscience Feed ────────────────────────────────── */}
+      <div className="cn-divider" />
+
+      <section className="cn-section" id="feed">
+        <div className="cn-section-header">
+          <div className="cn-section-label">Ethical Accounting</div>
+          <h2 className="cn-section-title">Algorithm Conscience Feed</h2>
+          <p className="cn-section-subtitle">
+            Every decision logged. Every deferred patient counted. The algorithm must answer for its choices.
+          </p>
+        </div>
+        <ConscieneceFeed consequences={consequenceLog} />
+      </section>
+
+      {/* ── CTA + Footer ───────────────────────────────────── */}
+      <div className="cn-divider" />
+      <CTA />
     </div>
   );
 };
