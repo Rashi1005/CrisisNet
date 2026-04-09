@@ -30,7 +30,6 @@ const AnimatedCounter = ({ target, decimals = 0, color }) => {
 
 const StatsSection = ({ state }) => {
   const stats     = state?.stats;
-  const hospitals = state?.hospitals ?? [];
 
   const totalArrived   = stats?.totalArrived   ?? 0;
   const livesSaved     = stats?.livesSaved     ?? 0;
@@ -38,8 +37,6 @@ const StatsSection = ({ state }) => {
   const transfersMade  = stats?.transfersMade  ?? 0;
   const deferred       = stats?.patientsDeferred ?? 0;
   const bumped         = stats?.patientsBumped ?? 0;
-
-  const activeCritical = hospitals.filter(h => (h.icuUsed / h.icuTotal) >= 0.85).length;
 
   const STATS = [
     {

@@ -68,7 +68,7 @@ const AlgorithmCards = ({ state }) => {
     dijkstra: {
       'Transfers':    stats ? stats.transfersMade : '—',
       'Deferred':     stats ? stats.patientsDeferred : '—',
-      'Assigned':     latest?.assignedHospital !== null && latest?.assignedHospital !== undefined
+      'Assigned':     latest?.assignedHospital != null
                         ? `Hospital #${latest.assignedHospital + 1}` : '—',
     },
   };
